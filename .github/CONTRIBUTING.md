@@ -11,17 +11,6 @@ experience for all its members, whether they are at a formal gathering, in
 a social setting, or taking part in activities online. Please see our
 [Code of Conduct](CODE_OF_CONDUCT.md) for more information.
 
-## Samvera Community Intellectual Property Licensing and Ownership
-
-All code contributors must have an Individual Contributor License Agreement
-(iCLA) on file with the Samvera Steering Group. If the contributor works for
-an institution, the institution must have a Corporate Contributor License
-Agreement (cCLA) on file.
-
-[Samvera Community Intellectual Property Licensing and Ownership](https://samvera.atlassian.net/wiki/spaces/samvera/pages/405211651)
-
-You should also add yourself to the `CONTRIBUTORS.md` file in the root of the project.
-
 ## Language
 
 The language we use matters.  Today, tomorrow, and for years to come
@@ -151,6 +140,7 @@ Common checks that may occur in our repositories:
 
 1. Travis CI - where our automated tests are running
 2. Approval Required - Github enforces at least one person approve a pull request. Also, all reviewers that have chimed in must approve.
+3. Required Labels - an appropriate [semver](https://semver.org/) label (see [release.yml](https://github.com/samvera/hyku/blob/main/.github/release.yml))
 
 If one or more of the required checks failed (or are incomplete), the code should not be merged (and the UI will not allow it). If all of the checks have passed, then anyone on the project (including the pull request submitter) may merge the code.
 

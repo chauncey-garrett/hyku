@@ -7,6 +7,7 @@ de:
         facet:
           based_near_label_sim: Ort
           creator_sim: Schöpfer
+          depositor_ssim: Einleger
           file_format_sim: Format
           generic_type_sim: Art
           keyword_sim: Stichwort
@@ -46,3 +47,4 @@ de:
           rights_tesim: Rechte
           subject_tesim: Fach
           title_tesim: Titel
+      start_over: Neue Suche

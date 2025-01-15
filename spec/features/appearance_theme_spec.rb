@@ -12,7 +12,7 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
     create(:generic_work,
            title: ['Llamas and Alpacas'],
            keyword: ['llama', 'alpaca'],
-           user: user)
+           user:)
   end
 
   # rubocop:enable RSpec/LetSetup
@@ -64,14 +64,14 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
   end
 
   context 'when a search results theme is selected' do
-    it 'updates the search results page with the selected layout view' do # rubocop:disable RSpec/ExampleLength
+    it 'updates the search results page with the selected layout view' do
       login_as admin
       visit '/admin/appearance'
       click_link('Themes')
       select('Gallery view', from: 'Search Results Page Theme')
-      # rubocop:disable Metrics/LineLength
+      # rubocop:disable Layout/LineLength
       expect(page).to have_content('This will select a default view for the search results page. Users can select their preferred views on the search results page that will override this selection')
-      # rubocop:enable Metrics/LineLength
+      # rubocop:enable Metrics/MethodLength
       find('body').click
       click_on('Save')
       site = Site.last
@@ -88,7 +88,9 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
       expect(page).to have_css('a.view-type-gallery.active')
     end
 
-    # TODO: temp skip until GroupAwareRoleChecker#has_group_aware_role? bug is resolved
+    # Temporarily commenting out these specs because they consistently fail in the CI pipeline 
+    # after the Bulkrax version update. The issue seems related to form submission failing 
+    # in the CI environment but not locally. This needs further investigation to resolve.
     xit 'updates to the users preferred view' do
       login_as admin
       visit '/admin/appearance'
@@ -140,7 +142,7 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
       allow_any_instance_of(ApplicationController).to receive(:current_account).and_return(account)
       visit '/'
       expect(page).to have_css('body.cultural_repository')
-      expect(page).to have_css('nav.navbar.navbar-inverse.navbar-static-top.cultural-repository-nav')
+      expect(page).to have_css('nav.navbar.cultural-repository-nav')
     end
 
     it 'updates the home theme when the theme is changed' do # rubocop:disable RSpec/ExampleLength
@@ -155,7 +157,7 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
       allow_any_instance_of(ApplicationController).to receive(:current_account).and_return(account)
       visit '/'
       expect(page).to have_css('body.cultural_repository')
-      expect(page).to have_css('nav.navbar.navbar-inverse.navbar-static-top.cultural-repository-nav')
+      expect(page).to have_css('nav.navbar.cultural-repository-nav')
       visit '/admin/appearance'
       click_link('Themes')
       select('Default home', from: 'Home Page Theme')
@@ -175,7 +177,7 @@ RSpec.describe 'Admin can select home page theme', type: :feature, js: true, cle
       visit '/'
       expect(page).to have_css('body.missing_theme')
       expect(page).not_to have_css('nav.cultural-repsitory-nav')
-      expect(page).to have_css('nav.navbar.navbar-inverse.navbar-static-top')
+      expect(page).to have_css('nav.navbar.navbar-expand-lg')
     end
   end
 end

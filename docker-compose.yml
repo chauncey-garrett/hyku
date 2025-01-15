@@ -1,11 +1,12 @@
-version: '3.8'
-
 x-app: &app
   build:
     context: .
-    target: hyku-base
+    target: hyku-web
     args:
-      - EXTRA_APK_PACKAGES=less vim bash openjdk11-jre ffmpeg rsync
+      BUILDKIT_INLINE_CACHE: 1
+    cache_from:
+      - ghcr.io/samvera/hyku/base:latest
+      - ghcr.io/samvera/hyku:latest
   image: ghcr.io/samvera/hyku:${TAG:-latest}
   env_file:
     - .env
@@ -37,9 +38,6 @@ networks:
 services:
   zoo:
     image: zookeeper:3.6.2
-    ports:
-      - 2181:2181
-      - 7001:7000
     environment:
       - ZOO_MY_ID=1
       - ZOO_SERVERS=server.1=zoo:2888:3888;2181
@@ -55,10 +53,11 @@ services:
       timeout: "8s"
 
   solr:
-    image: hyku/solr:8
+    image: ghcr.io/samvera/hyku/solr:${TAG:-latest}
     build:
       context: solr
       dockerfile: Dockerfile
+      target: hyku-solr
     environment:
       - OOM=script
       - SOLR_ADMIN_USER=solr
@@ -82,11 +81,11 @@ services:
     networks:
       internal:
     healthcheck:
-      test: curl -sf http://$$SOLR_ADMIN_USER:$$SOLR_ADMIN_PASSWORD@localhost:8983/solr/admin/cores?action=STATUS || exit 1
-      start_period: 30s
-      interval: 20s
+      test: curl -sf http://$$SOLR_ADMIN_USER:$$SOLR_ADMIN_PASSWORD@solr:8983/solr/admin/cores?action=STATUS || exit 1
+      start_period: 3s
+      interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 6
     depends_on:
       zoo:
         condition: service_healthy
@@ -121,8 +120,23 @@ services:
     networks:
       internal:
 
+  # Used exclusively for building and caching the base image to reduce build times
+  base:
+    <<: *app
+    image: ghcr.io/samvera/hyku/base:${BASE_TAG:-latest}
+    build:
+      context: .
+      target: hyku-base
+      cache_from:
+        - ghcr.io/samvera/hyku/base:latest
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    command: bash -l -c "echo 'base is only used for building base images, which in turn reduces image build times. It does not need to be run'"
+
   web:
     <<: *app
+    # Uncomment command to access container with out starting bin/web. Useful for debugging
+    # command: sleep infinity
     environment:
       - VIRTUAL_PORT=3000
       - VIRTUAL_HOST=.hyku.test
@@ -145,19 +159,25 @@ services:
         condition: service_started
       initialize_app:
         condition: service_completed_successfully
-
+    # ports:
+    #   - 3000:3000
     expose:
       - 3000
 
   worker:
     <<: *app
-    image: ghcr.io/samvera/hyku/worker:latest
+    image: ghcr.io/samvera/hyku/worker:${TAG:-latest}
+    # Uncomment command to access container with out starting bin/worker. Useful for debugging
+    # command: sleep infinity
     build:
       context: .
       target: hyku-worker
       args:
-        - EXTRA_APK_PACKAGES=less vim bash openjdk11-jre ffmpeg rsync
-    command: bundle exec sidekiq
+        BUILDKIT_INLINE_CACHE: 1
+      cache_from:
+        - ghcr.io/samvera/hyku/base:latest
+        - ghcr.io/samvera/hyku:latest
+        - ghcr.io/samvera/hyku/worker:latest
     depends_on:
       check_volumes:
         condition: service_completed_successfully
@@ -196,6 +216,7 @@ services:
         solrcloud-upload-configset.sh /app/samvera/hyrax-webapp/solr/conf &&
         solrcloud-assign-configset.sh &&
         SOLR_COLLECTION_NAME=hydra-test solrcloud-assign-configset.sh &&
+        bundle &&
         db-migrate-seed.sh
     depends_on:
       db:

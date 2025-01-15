@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-if ENV.fetch('HYKU_BULKRAX_ENABLED', 'true') == 'true'
-
+if Hyku.bulkrax_enabled?
+  # rubocop:disable Metrics/BlockLength
   Bulkrax.setup do |config|
     # Add local parsers
     # config.parsers += [
@@ -45,14 +45,18 @@ if ENV.fetch('HYKU_BULKRAX_ENABLED', 'true') == 'true'
     # config.collection_field_mapping['Bulkrax::RdfEntry'] = 'http://opaquenamespace.org/ns/set'
 
     # Field mappings
-    # Create a completely new set of mappings by replacing the whole set as follows
-    #   config.field_mappings = {
-    #     "Bulkrax::OaiDcParser" => { **individual field mappings go here*** }
-    #   }
+    # NOTE: Bulkrax field mappings are configured on a per-tenant basis in the Account settings.
+    # The default set of field mappings that new tenants will be initialized with can be found
+    # and/or modified in config/application.rb (Hyku#default_bulkrax_field_mappings)
+    # @see config/application.rb
+    # @see app/models/concerns/account_settings.rb
+    # WARN: Modifying Bulkrax's field mappings in this file will not work as expected
+    # @see lib/bulkrax/bulkrax_decorator.rb
 
-    # Add to, or change existing mappings as follows
-    #   e.g. to exclude date
-    #   config.field_mappings["Bulkrax::OaiDcParser"]["date"] = { from: ["date"], excluded: true  }
+    # Because Hyku now uses and assumes Valkyrie to query the repository layer, we need to match the
+    # object factory to use Valkyrie.
+    config.object_factory = Bulkrax::ValkyrieObjectFactory
+    config.factory_class_name_coercer = Bulkrax::FactoryClassFinder::ValkyrieMigrationCoercer
 
     # To duplicate a set of mappings from one parser to another
     #   config.field_mappings["Bulkrax::OaiOmekaParser"] = {}
@@ -61,4 +65,12 @@ if ENV.fetch('HYKU_BULKRAX_ENABLED', 'true') == 'true'
     # Properties that should not be used in imports/exports. They are reserved for use by Hyrax.
     # config.reserved_properties += ['my_field']
   end
+  # rubocop:enable Metrics/BlockLength
+
+  # Sidebar for hyrax 3+ support
+  if Object.const_defined?(:Hyrax) && ::Hyrax::DashboardController&.respond_to?(:sidebar_partials)
+    Hyrax::DashboardController.sidebar_partials[:repository_content] << "hyrax/dashboard/sidebar/bulkrax_sidebar_additions"
+  end
+
+  Bulkrax::CreateRelationshipsJob.update_child_records_works_file_sets = true
 end

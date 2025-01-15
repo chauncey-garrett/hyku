@@ -2,18 +2,21 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_22_001715) do
+ActiveRecord::Schema.define(version: 2024_12_05_212513) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "hstore"
+  enable_extension "pgcrypto"
   enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
 
   create_table "account_cross_searches", force: :cascade do |t|
     t.bigint "search_account_id"
@@ -70,6 +73,12 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.datetime "last_succeeded_at"
     t.string "importerexporter_type", default: "Bulkrax::Importer"
     t.integer "import_attempts", default: 0
+    t.string "status_message", default: "Pending"
+    t.string "error_class"
+    t.index ["identifier", "importerexporter_id", "importerexporter_type"], name: "bulkrax_identifier_idx"
+    t.index ["importerexporter_id", "importerexporter_type", "id"], name: "index_bulkrax_entries_on_importerexporter_id_type_and_id"
+    t.index ["importerexporter_id", "importerexporter_type"], name: "bulkrax_entries_importerexporter_idx"
+    t.index ["type"], name: "index_bulkrax_entries_on_type"
   end
 
   create_table "bulkrax_exporter_runs", force: :cascade do |t|
@@ -102,6 +111,8 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.string "workflow_status"
     t.boolean "include_thumbnails", default: false
     t.boolean "generated_metadata", default: false
+    t.string "status_message", default: "Pending"
+    t.string "error_class"
     t.index ["user_id"], name: "index_bulkrax_exporters_on_user_id"
   end
 
@@ -142,6 +153,10 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.boolean "validate_only"
     t.datetime "last_error_at"
     t.datetime "last_succeeded_at"
+    t.string "status_message", default: "Pending"
+    t.datetime "last_imported_at"
+    t.datetime "next_import_at"
+    t.string "error_class"
     t.index ["user_id"], name: "index_bulkrax_importers_on_user_id"
   end
 
@@ -152,7 +167,10 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "order", default: 0
+    t.string "status_message", default: "Pending"
+    t.index ["child_id"], name: "index_bulkrax_pending_relationships_on_child_id"
     t.index ["importer_run_id"], name: "index_bulkrax_pending_relationships_on_importer_run_id"
+    t.index ["parent_id"], name: "index_bulkrax_pending_relationships_on_parent_id"
   end
 
   create_table "bulkrax_statuses", force: :cascade do |t|
@@ -166,6 +184,9 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.string "runnable_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["error_class"], name: "index_bulkrax_statuses_on_error_class"
+    t.index ["runnable_id", "runnable_type"], name: "bulkrax_statuses_runnable_idx"
+    t.index ["statusable_id", "statusable_type"], name: "bulkrax_statuses_statusable_idx"
   end
 
   create_table "checksum_audit_logs", id: :serial, force: :cascade do |t|
@@ -304,11 +325,44 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.index ["user_id"], name: "index_file_view_stats_on_user_id"
   end
 
-  create_table "hyku_groups", id: :serial, force: :cascade do |t|
-    t.string "name"
-    t.text "description"
+  create_table "good_job_processes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "state"
+  end
+
+  create_table "good_jobs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "queue_name"
+    t.integer "priority"
+    t.jsonb "serialized_params"
+    t.datetime "scheduled_at"
+    t.datetime "performed_at"
+    t.datetime "finished_at"
+    t.text "error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "active_job_id"
+    t.text "concurrency_key"
+    t.text "cron_key"
+    t.uuid "retried_good_job_id"
+    t.datetime "cron_at"
+    t.index ["active_job_id", "created_at"], name: "index_good_jobs_on_active_job_id_and_created_at"
+    t.index ["active_job_id"], name: "index_good_jobs_on_active_job_id"
+    t.index ["concurrency_key"], name: "index_good_jobs_on_concurrency_key_when_unfinished", where: "(finished_at IS NULL)"
+    t.index ["cron_key", "created_at"], name: "index_good_jobs_on_cron_key_and_created_at"
+    t.index ["cron_key", "cron_at"], name: "index_good_jobs_on_cron_key_and_cron_at", unique: true
+    t.index ["finished_at"], name: "index_good_jobs_jobs_on_finished_at", where: "((retried_good_job_id IS NULL) AND (finished_at IS NOT NULL))"
+    t.index ["queue_name", "scheduled_at"], name: "index_good_jobs_on_queue_name_and_scheduled_at", where: "(finished_at IS NULL)"
+    t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
+  end
+
+  create_table "group_roles", force: :cascade do |t|
+    t.bigint "role_id"
+    t.bigint "group_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id"], name: "index_group_roles_on_group_id"
+    t.index ["role_id"], name: "index_group_roles_on_role_id"
   end
 
   create_table "hyrax_collection_types", force: :cascade do |t|
@@ -328,6 +382,25 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.index ["machine_id"], name: "index_hyrax_collection_types_on_machine_id", unique: true
   end
 
+  create_table "hyrax_counter_metrics", force: :cascade do |t|
+    t.string "worktype"
+    t.string "resource_type"
+    t.string "work_id"
+    t.date "date"
+    t.integer "total_item_investigations"
+    t.integer "total_item_requests"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "title"
+    t.integer "year_of_publication"
+    t.string "publisher"
+    t.string "author"
+    t.index ["date"], name: "index_hyrax_counter_metrics_on_date"
+    t.index ["resource_type"], name: "index_hyrax_counter_metrics_on_resource_type"
+    t.index ["work_id"], name: "index_hyrax_counter_metrics_on_work_id"
+    t.index ["worktype"], name: "index_hyrax_counter_metrics_on_worktype"
+  end
+
   create_table "hyrax_default_administrative_set", force: :cascade do |t|
     t.string "default_admin_set_id", null: false
     t.datetime "created_at", null: false
@@ -339,6 +412,53 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.boolean "enabled", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "hyrax_groups", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "humanized_name"
+  end
+
+  create_table "identity_providers", force: :cascade do |t|
+    t.string "name"
+    t.string "provider"
+    t.jsonb "options"
+    t.string "logo_image"
+    t.string "logo_image_text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "iiif_print_derivative_attachments", id: :serial, force: :cascade do |t|
+    t.string "fileset_id"
+    t.string "path"
+    t.string "destination_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fileset_id"], name: "index_iiif_print_derivative_attachments_on_fileset_id"
+  end
+
+  create_table "iiif_print_ingest_file_relations", id: :serial, force: :cascade do |t|
+    t.string "file_path"
+    t.string "derivative_path"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["file_path"], name: "index_iiif_print_ingest_file_relations_on_file_path"
+  end
+
+  create_table "iiif_print_pending_relationships", force: :cascade do |t|
+    t.string "child_title", null: false
+    t.string "parent_id", null: false
+    t.string "child_order", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "parent_model"
+    t.string "child_model"
+    t.string "file_id"
+    t.index ["parent_id"], name: "index_iiif_print_pending_relationships_on_parent_id"
   end
 
   create_table "job_io_wrappers", id: :serial, force: :cascade do |t|
@@ -431,6 +551,19 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.index ["namespace"], name: "index_minter_states_on_namespace", unique: true
   end
 
+  create_table "orm_resources", id: :text, default: -> { "(uuid_generate_v4())::text" }, force: :cascade do |t|
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "internal_resource"
+    t.integer "lock_version"
+    t.index "(((metadata -> 'bulkrax_identifier'::text) ->> 0))", name: "index_on_bulkrax_identifier", where: "((metadata -> 'bulkrax_identifier'::text) IS NOT NULL)"
+    t.index ["internal_resource"], name: "index_orm_resources_on_internal_resource"
+    t.index ["metadata"], name: "index_orm_resources_on_metadata", using: :gin
+    t.index ["metadata"], name: "index_orm_resources_on_metadata_jsonb_path_ops", opclass: :jsonb_path_ops, using: :gin
+    t.index ["updated_at"], name: "index_orm_resources_on_updated_at"
+  end
+
   create_table "permission_template_accesses", id: :serial, force: :cascade do |t|
     t.integer "permission_template_id"
     t.string "agent_type"
@@ -497,6 +630,8 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.integer "resource_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text "description"
+    t.integer "sort_value"
     t.index ["name", "resource_type", "resource_id"], name: "index_roles_on_name_and_resource_type_and_resource_id"
     t.index ["name"], name: "index_roles_on_name"
   end
@@ -694,6 +829,7 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.string "show_theme"
     t.string "search_theme"
     t.string "favicon"
+    t.string "directory_image_alt_text"
   end
 
   create_table "subject_local_authority_entries", id: :serial, force: :cascade do |t|
@@ -722,8 +858,17 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.string "file_set_uri"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "filename"
     t.index ["file_set_uri"], name: "index_uploaded_files_on_file_set_uri"
     t.index ["user_id"], name: "index_uploaded_files_on_user_id"
+  end
+
+  create_table "user_batch_emails", force: :cascade do |t|
+    t.bigint "user_id"
+    t.datetime "last_emailed_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id"], name: "index_user_batch_emails_on_user_id"
   end
 
   create_table "user_stats", id: :serial, force: :cascade do |t|
@@ -784,6 +929,11 @@ ActiveRecord::Schema.define(version: 2022_11_22_001715) do
     t.integer "invited_by_id"
     t.string "invited_by_type"
     t.string "preferred_locale"
+    t.string "provider"
+    t.string "uid"
+    t.string "batch_email_frequency", default: "never"
+    t.string "api_key"
+    t.index ["api_key"], name: "index_users_on_api_key"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

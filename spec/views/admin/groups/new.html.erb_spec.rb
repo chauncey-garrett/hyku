@@ -10,20 +10,20 @@ RSpec.describe 'admin/groups/new', type: :view do
     end
 
     it 'has the "description" tab in an active state' do
-      expect(rendered).to have_selector('.nav-tabs .active a', text: 'Description')
+      expect(rendered).to have_selector('.nav-tabs .nav-item .nav-link.active', text: 'Description')
     end
 
     it 'has disable tabs for actions that require a group to have been created' do
-      expect(rendered).to have_selector('.nav-tabs .disabled a', text: 'Users')
-      expect(rendered).to have_selector('.nav-tabs .disabled a', text: 'Remove')
+      expect(rendered).to have_selector('.nav-tabs .nav-item a.nav-link.disabled', text: 'Users')
+      expect(rendered).to have_selector('.nav-tabs .nav-item a.nav-link.disabled', text: 'Remove')
     end
 
     it 'has an input for name' do
-      expect(rendered).to have_selector('input', id: 'hyku_group_name')
+      expect(rendered).to have_selector('input', id: 'group_humanized_name')
     end
 
     it 'has a text area for description' do
-      expect(rendered).to have_selector('textarea', id: 'hyku_group_description')
+      expect(rendered).to have_selector('textarea', id: 'group_description')
     end
 
     it 'has a save button' do

@@ -7,6 +7,7 @@ es:
         facet:
           based_near_label_sim: Ubicación
           creator_sim: Creador
+          depositor_ssim: Depositor
           file_format_sim: Formato
           generic_type_sim: Tipo
           keyword_sim: Palabra clave
@@ -46,3 +47,4 @@ es:
           rights_tesim: Derechos
           subject_tesim: Tema
           title_tesim: Título
+      start_over: Nueva búsqueda

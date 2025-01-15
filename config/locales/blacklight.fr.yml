@@ -7,6 +7,7 @@ fr:
         facet:
           based_near_label_sim: Emplacement
           creator_sim: Créateur
+          depositor_ssim: Déposant
           file_format_sim: Format
           generic_type_sim: Type
           keyword_sim: Mot-clé
@@ -46,3 +47,4 @@ fr:
           rights_tesim: Droits
           subject_tesim: Assujettir
           title_tesim: Titre
+      start_over: Nouvelle recherche

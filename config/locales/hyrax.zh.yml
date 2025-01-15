@@ -203,6 +203,7 @@ zh:
         configuration: 组态
         contact: 联系
         content_blocks: 内容块
+        identity_provider: 身份提供者
         notifications: 通知事项
         pages: 页数
         profile: 个人资料
@@ -242,18 +243,31 @@ zh:
           describe_users_html:
             one: 该存储库中有<b>%{count}个用户</b> 。
             other: 此存储库中有<b>%{count}个用户</b> 。
+          group_label: 团体
+          group_role_label: 团体角色
           id_label: 用户名
+          reader_title: 查看用户
           role_label: 的角色
+          site_role_label: 站点角色
           title: 管理用户
       workflow_roles:
         header: 工作流程角色
         index:
+          current_group_roles: 目前的小组角色
           current_roles: 现任职务
+          current_user_roles: 当前用户角色
           delete:
             confirm: 你确定吗？
           header:
+            display_name: 显示名称
+            email: 电子邮件
+            group_name: 团队名字
+            group_roles: 组角色
             roles: 的角色
             user: 用户
+            user_roles: 用户角色
+          new_group_role: 将角色分配给组
+          new_role: 分配角色
           new_user_role: 分配角色给用户
           no_roles: 没有角色
       workflows:
@@ -281,10 +295,10 @@ zh:
         default: 你必须先登录才能做到这一点！
       unprocessable_entity:
         default: 您尝试修改的资源无法根据您的请求进行修改。
-    background_attribution_html: ""
+    background_attribution_html: ''
     base:
       citations:
-        header: 引文：
+        header: 引文
       form_child_work_relationships:
         actions:
           remove: 从这项工作中删除
@@ -347,6 +361,8 @@ zh:
         title: 标题
         unauthorized: 此%{type}中没有公开可用的项目。
         visibility: 能见度
+      part_of:
+        label: 部分：
       relationships:
         empty: 该%{type}当前不在任何集合中。
         header: 人际关系
@@ -363,6 +379,9 @@ zh:
       help:
         resource_type: 您可以选择多种类型以应用于所有文件
         title: 文件名将是默认标题。请提供更有意义的标题，文件名仍将被系统保留。
+    batch_edits:
+      delete_selected:
+        button_label: 删除所选
     batch_uploads:
       disabled: 管理员已禁用功能
       files:
@@ -526,6 +545,9 @@ zh:
           logo:
             description: 一幅或多幅图像将显示在集合页面的顶部。为了获得最佳效果，请上传40像素高的图像（JPG，GIF或PNG）。较大的图像将被调整为40像素高。
             label: 商标
+          thumbnail:
+            description: 如果您决定展示此系列，将显示在搜索结果和主页上的图像。图像将在整个应用程序中以各种方式裁剪和调整大小，但为获得最佳效果，请使用横向图像（JPG、GIF 或 PNG）。
+            label: 缩略图
         form_discovery:
           para1: 这些设置确定谁可以发现和查看此收藏的登录页面；它们不会影响集合中项目的可见性。
           para2: 如果您选择不使该收藏集成为开放访问权限，您仍然可以使用“共享”选项卡与特定用户和组共享收藏集。
@@ -548,6 +570,11 @@ zh:
             collection_title: 收藏标题
           this_collection_in_other_collections_description: 您可以将此集合作为子集合添加到其他集合。
         form_share:
+          access_options:
+            creator: 造物主
+            depositor: 储户
+            manager: 经理
+            viewer: 查看器
           add_group: 新增群组
           add_sharing: 添加共享
           add_user: 添加用户
@@ -645,6 +672,7 @@ zh:
           groups: 团体：
           managed_access:
             deposit: 存款
+            edit: 编辑
             manage: 管理
             view: 视图
           users: 使用者：
@@ -671,6 +699,7 @@ zh:
         sr:
           batch_checkbox: 检查添加到收藏夹或编辑列表
           check_all_label: 选择所有要添加到集合或编辑的文件
+          collections_batch_checkbox: 勾选批量删除集合。
           detail_label: 显示的摘要详细信息
           listing: 您存放的物品清单
           press_to: 按到
@@ -787,7 +816,7 @@ zh:
       groups_description:
         description_html: 标记为“选择组”的下拉列表中的组列表是您所属的用户管理组的列表。您可以选择特定的组并为%{application_name}中的文件分配访问级别，类似于添加用户访问级别。
     footer:
-      copyright_html: "<strong>版权所有 &copy; 2017 Samvera</strong> 根据Apache许可证2.0版许可"
+      copyright_html: "<strong>版权所有 &copy; 2019 - %{current_year} Samvera</strong> 根据Apache许可证2.0版许可"
       service_html: 的服务<a href="http://samvera.org/" class="navbar-link" target="_blank">Samvera</a>.
     help:
       header: 用户支援
@@ -796,8 +825,13 @@ zh:
       admin_sets:
         link: 查看所有收藏
         tab_label: 探索收藏
-        title: 探索收藏
         thumbnail: 缩略图
+        title: 探索收藏
+      featured_collections:
+        document:
+          title_label: 标题
+        no_collections: 没有精选集。
+        title: 精选系列
       featured_researcher:
         missing: 没有研究人员的特色。
         tab_label: 特色研究员
@@ -906,11 +940,11 @@ zh:
         terms_page: 使用条款
       updated: 页面已更新。
     passive_consent_to_agreement: 保存此作品，我同意
-    product_name: "俳句"
+    product_name: 俳句
     product_twitter_handle: "@HydraInABox"
     search:
       button:
-        html: <span class="glyphicon glyphicon-search"></span>走
+        html: <span class="fa fa-search"></span>走
         text: 搜索
       form:
         option:
@@ -1001,6 +1035,13 @@ zh:
       permissions_message: 更新文件权限。这可能需要几分钟的时间。您可能需要刷新浏览器或稍后返回此记录以查看更新的文件权限。
       processing: 文件正在处理；您可以在处理完成后进行编辑
     user_profile:
+      email_frequency:
+        daily: 日常的
+        label: <i class="fa fa-calendar"></i> 批量电子邮件频率
+        monthly: 每月
+        never: 绝不
+        not_set: 尚未指定
+        weekly: 每周
       orcid:
         alt: ORCID图标
         label: ORCID个人资料
@@ -1067,7 +1108,7 @@ zh:
         description: 简短的总体描述，适用于本系列中收集的所有作品。例如，“地球科学学院研究生创建的论文和补充文件”。
         title: 一个名称，以帮助标识管理集并将其与存储库中的其他管理集区分开。
       collection:
-        based_near: 与馆藏相关的地名，例如馆藏的出版地点，馆藏内容所在的城市，州或国家。调用<a href='http://www.geonames.org'> GeoNames Web服务</a>。
+        based_near: 与作品相关的地名，例如其出版地点，或作品内容所涉及的城市、州或国家。调用 <a href='http://www.geonames.org' >GeoNames Web 服务</a>。请注意，您必须在帐户设置中配置您的 geonames 用户名，否则此字段将出现加载错误。</br> </br><b>启用此字段的步骤：</b><br/>1.在 <a href='http://www.geonames.org'>Geonames 网络服务页面</a></br>创建一个免费帐户。2.转到您的 <a href='http://www.geonames.org/manageaccount'>geonames 帐户设置</a>，然后选择底部的选项以启用免费服务。</br>3.在<a href='/admin/account/edit?locale=en'>仪表板中进入您的 hyku 帐户设置。</a></br>4.在 hyrax 帐户设置中输入您的 geonames 用户名。<br/>5.您现在应该能够在此下拉列表中看到位置列表
         contributor: 您想通过在集合创建过程中扮演的角色而被认可的个人或团体，而不是主要角色。
         creator: 负责收集的个人或团体。通常，这是内容的作者。输入的个人名字应使用姓氏，例如“约翰·史密斯”。
         date_created: 集合创建的日期。
@@ -1092,9 +1133,9 @@ zh:
         require_membership: 一件作品必须至少属于这一类型的收藏
         sharable: 允许用户为他们管理的收藏指派收藏经理，存款人和查看者
         share_applies_to_new_works: 在集合中直接创建新作品时，请根据其收藏角色授予共享用户和组新作品的权限。
-        title: ""
+        title: ''
       defaults:
-        based_near: 与该作品相关的地名，例如其出版地或该作品所涉及的城市，州或国家。调用<a href='http://www.geonames.org'> GeoNames Web服务</a>。
+        based_near: 与作品相关的地名，例如其出版地点，或作品内容所涉及的城市、州或国家。调用 <a href='http://www.geonames.org' >GeoNames Web 服务</a>。请注意，您必须在帐户设置中配置您的 geonames 用户名，否则此字段将出现加载错误。</br> </br><b>启用此字段的步骤：</b><br/>1.在 <a href='http://www.geonames.org'>Geonames 网络服务页面</a></br>创建一个免费帐户。2.转到您的 <a href='http://www.geonames.org/manageaccount'>geonames 帐户设置</a>，然后选择底部的选项以启用免费服务。</br>3.在<a href='/admin/account/edit?locale=en'>仪表板中进入您的 hyku 帐户设置。</a></br>4.在 hyrax 帐户设置中输入您的 geonames 用户名。<br/>5.您现在应该能够在此下拉列表中看到位置列表
         contributor: 您希望因在作品创作中扮演的角色而被认可的个人或团体，而不是主要角色。
         creator: 负责工作的个人或团体。通常，这是内容的作者。输入的个人名字应使用姓氏，例如“约翰·史密斯”。
         date_created: 工作创建的日期。
@@ -1109,6 +1150,7 @@ zh:
         resource_type: 用于描述要上载的内容类型的预定义类别，例如“商品”，“商品”，“商品”，或“数据集”。可以选择一种以上的类型。
         subject: 描述工作内容的标题或索引词；这些确实需要符合现有词汇。
         title: 有助于识别作品的名称。
+        video_embed: 如果您输入视频的嵌入链接，它必须是格式正确、以“http://”或“https://”开头的网址。它还需要包含指向可显示在 iframe 中的托管视频的有效链接。 <br /><br /><i>示例：<br/>https://player.vimeo.com/video/467264493?h=b089de0eab<br/>https://www.youtube.com/embed/ Znf73dsFdC8</i>
       labels:
         extent: 程度
     labels:
@@ -1131,17 +1173,37 @@ zh:
       defaults:
         admin_set_id: 行政套装
         based_near: 位置
+        contributor: 撰稿人
         creator: 创作者
         date_created: 创建日期
+        default_button_background_color: 默认按钮背景颜色
+        default_button_border_color: 默认按钮边框颜色
+        default_button_text_color: 默认按钮文字颜色
         description: 描述
         embargo_release_date: 直到
+        facet_panel_background_color: 分面面板背景色
+        facet_panel_text_color: 构面面板文本颜色
         files: 上传一个文件
+        footer_link_color: 页脚链接颜色
+        footer_link_hover_color: 页脚链接悬停颜色
+        header_and_footer_background_color: 页眉和页脚背景颜色
+        header_and_footer_text_color: 页眉和页脚文本颜色
+        identifier: 识别码
         keyword: 关键词
         lease_expiration_date: 直到
         license: 执照
+        link_color: 链接颜色
+        link_hover_color: 链接悬停颜色
         member_of_collection_ids: 添加到收藏
+        navbar_background_color: 导航栏背景颜色
+        navbar_link_background_hover_color: 导航栏链接背景悬停颜色
+        navbar_link_text_color: 导航栏链接文字颜色
+        navbar_link_text_hover_color: 导航栏链接文本悬停颜色
+        primary_button_hover_color: 主按钮悬停颜色
+        publisher: 发行人
         related_url: 相关网址
         rights_statement: 权利声明
+        source: 资源
         title: 标题
         visibility_after_embargo: 然后打开它
         visibility_after_lease: 然后将其限制为
@@ -1154,5 +1216,3 @@ zh:
       defaults:
         find_child_work: 正在搜寻作品…
         member_of_collection_ids: 选择一个收藏夹…
-    required:
-      html: <span class="label label-info required-tag">需要</span>

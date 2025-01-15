@@ -22,13 +22,26 @@
     padding-bottom: 40px;
   }
 
+  .image-masthead {
+    margin-bottom: 2.25em;
+  }
+
   // removes the blur on the banner image
   .image-masthead .background-container {
     -webkit-filter: none;
     filter: none;
+    top: 1em;
+  }
+
+  .marketing-text-share-button-container {
+    padding-top: 4em;
   }
 
   ////// Navbar //////
+
+  .navbar-collapse {
+    justify-content: space-between;
+  }
 
   // styles the top nav menu application name that is centered
   .institutional-repository-application-name {
@@ -137,11 +150,11 @@
   .stats-color-block {
     background-color: #f8f8f8;
     border-bottom: 1px solid #ddd;
-    margin-top: -25px;
+    margin-top: -20px;
   }
 
-  .glyphicon-menu-right,
-  .glyphicon-menu-left {
+  .fa-chevron-right,
+  .fa-chevron-left {
     color: #555;
     display: inline-block;
     font-weight: 700;
@@ -163,6 +176,13 @@
       .right {
         margin-right: 0;
       }
+    }
+
+    .carousel-item.active {
+      display: flex;
+      padding-top: 1em;
+      padding-left: 10em;
+      padding-right: 10em;
     }
   }
 
