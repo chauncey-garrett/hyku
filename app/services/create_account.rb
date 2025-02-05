@@ -40,28 +40,32 @@ class CreateAccount
   end
 
   def create_defaults
+    RolesService.create_default_roles!
+    RolesService.create_default_hyrax_groups_with_roles!
     Hyrax::CollectionType.find_or_create_default_collection_type
     Hyrax::CollectionType.find_or_create_admin_set_type
     return if account.search_only?
 
-    AdminSet.find_or_create_default_admin_set_id
+    Hyrax::AdminSetCreateService.find_or_create_default_admin_set.id
   end
 
   # Workaround for upstream issue https://github.com/samvera/hyrax/issues/3136
   def fillin_translations
     collection_types = Hyrax::CollectionType.all
     collection_types.each do |c|
-      next unless c.title =~ /^translation missing/
+      next unless /^translation missing/.match?(c.title)
       oldtitle = c.title
       c.title = I18n.t(c.title.gsub("translation missing: en.", ''))
       c.save
-      Rails.logger.debug "#{oldtitle} changed to #{c.title}"
+      Rails.logger.debug { "#{oldtitle} changed to #{c.title}" }
     end
   end
 
   def add_initial_users
     users.each do |user|
       user.add_role :admin, Site.instance
+      user.add_default_group_membership!
+      Hyrax::Group.find_or_create_by!(name: Ability.admin_group_name).add_members_by_id(user.id)
     end
   end
 
@@ -72,18 +76,17 @@ class CreateAccount
     CreateAccountInlineJob.perform_now(account)
   end
 
+  ##
   # Schedules jobs that will run automatically after
   # the first time they are called
   def schedule_recurring_jobs
     return if account.search_only?
-
-    EmbargoAutoExpiryJob.perform_later(account)
-    LeaseAutoExpiryJob.perform_later(account)
+    account.find_or_schedule_jobs
   end
 
   private
 
-    def initialize_account_data
-      Site.update(account: account)
-    end
+  def initialize_account_data
+    Site.update(account:)
+  end
 end

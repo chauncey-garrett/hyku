@@ -3,20 +3,31 @@
  *= require select2
  *= require_self
 */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat&display=swap');
 @import "variables";
 @import "bootstrap-default-overrides";
-@import "bootstrap-sprockets";
 @import "bootstrap";
 @import "blacklight/blacklight";
+@import "blacklight_gallery/gallery";
+@import "blacklight_gallery/masonry";
+@import "blacklight_gallery/slideshow";
+@import "blacklight_gallery/osd_viewer";
+@import "hyrax/blacklight_gallery";
 @import "font-awesome";
 @import "hyrax/hyrax";
 @import "hyku";
 @import "accounts";
 @import "viewer";
 
-@import "blacklight_gallery/gallery";
-@import "blacklight_gallery/masonry";
-@import "blacklight_gallery/slideshow";
-@import "blacklight_gallery/osd_viewer";
-
 @import "themes/*";
+
+// for catalog search result snippets
+.highlight {
+  background: #ffff00;
+  font-weight: 700;
+}
+
+// to make collection form labels bold
+#collection-edit-controls label.control-label {
+  font-weight: bold !important;
+}

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# NOTE: If want to run spec in browser, you have to set "js: true"
 RSpec.describe 'Accounts administration', multitenant: true do
   context 'as an superadmin' do
     let(:user) { FactoryBot.create(:superadmin) }
@@ -15,6 +16,7 @@ RSpec.describe 'Accounts administration', multitenant: true do
       allow(Apartment::Tenant).to receive(:switch).with(account.tenant) do |&block|
         block.call
       end
+      allow_any_instance_of(Account).to receive(:find_or_schedule_jobs)
     end
 
     around do |example|

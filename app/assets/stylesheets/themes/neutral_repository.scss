@@ -1,6 +1,23 @@
 .neutral_repository {
+  .theme-container {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .carousel-item.active {
+    display: flex;
+    justify-content: center;
+  }
+
+  .site-title-container {
+    padding: 1.5em 0;
+  }
 
   ////// Basic Apperance Styles //////
+
+  .mt-4 {
+    margin-top: 40px;
+  }
 
   .mb-40 {
     margin-bottom: 40px;
@@ -96,9 +113,10 @@
     border: 1px solid #ddd;
   }
 
-  ////// Carousel //////
+  ////// Carousel & Featured Works //////
 
-  #featured-carousel {
+
+  .featured-works-section {
     border: 1px solid #ccc;
     padding: 1em;
   }
@@ -152,13 +170,16 @@
 
   ////// Media Queries //////
 
-  @media (max-width: $screen-md-min) {
+  @media (max-width: 992px) {
     div.neutral-repository-collections:nth-of-type(2n+3) {
       clear: left;
     }
+    .theme-container {
+      display: block;
+    }
   }
 
-  @media (min-width: $screen-md-min) {
+  @media (min-width: 992px) {
     div.neutral-repository-collections:nth-of-type(3n+4) {
       clear: left;
     }

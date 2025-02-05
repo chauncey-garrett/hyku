@@ -10,36 +10,30 @@ module Hyku
 
     # override the standard invite so that accounts are added properly
     # if they already exist on another tenant and invited if they do not
+    # rubocop:disable Metrics/AbcSize
     def create
+      authorize! :grant_admin_role, User if params[:user][:role] == ::RolesService::ADMIN_ROLE
       self.resource = User.find_by(email: params[:user][:email]) || invite_resource
 
-      # Set roles, whether they are a new user or not
-      # safe because adding the same role twice is a noop
-      site = Site.instance
-      if params[:user][:roles].present?
-        params[:user][:roles].split(',').each do |role|
-          resource.add_role(role.strip, site)
-        end
-      end
-      # end of override code
+      resource.add_default_group_membership!
+      resource.add_role(params[:user][:role], Site.instance) if params[:user][:role].present?
 
       yield resource if block_given?
 
       # Override destination as this was a success either way
-      if is_flashing_format? && resource.invitation_sent_at
-        set_flash_message :notice, :send_instructions, email: resource.email
-      end
+      set_flash_message :notice, :send_instructions, email: resource.email if is_flashing_format? && resource.invitation_sent_at
       if method(:after_invite_path_for).arity == 1
         respond_with resource, location: after_invite_path_for(current_inviter)
       else
         respond_with resource, location: after_invite_path_for(current_inviter, resource)
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     protected
 
-      def user_params
-        params.require(:user).permit(:email, :roles)
-      end
+    def user_params
+      params.require(:user).permit(:email, :role)
+    end
   end
 end

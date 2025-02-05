@@ -22,14 +22,40 @@ RSpec.describe Hyku::InvitationsController, type: :controller do
       post :create, params: {
         user: {
           email: "user@guest.org",
-          roles: "admin,manager"
+          role: "manager"
         }
       }
       created_user = User.find_by(email: 'user@guest.org')
-      expect(created_user.roles.map(&:name)).to include('manager', 'admin')
-      expect(created_user.roles.map(&:resource_type).uniq).to contain_exactly("Site")
+      expect(created_user.roles.map(&:name)).to include('manager')
+      expect(created_user.roles.map(&:resource_type).uniq).to contain_exactly('Site', 'Hyrax::Group')
       expect(response).to redirect_to Hyrax::Engine.routes.url_helpers.admin_users_path(locale: 'en')
       expect(flash[:notice]).to eq 'An invitation email has been sent to user@guest.org.'
+    end
+
+    context 'when user already exists' do
+      let(:user) { create(:user) }
+
+      # Mimic the state of a user who is only active in other tenants;
+      # i.e. a user who has no roles in this tenant
+      before do
+        user.roles.destroy_all
+      end
+
+      it 'adds the user to the registered group' do
+        expect(user.roles).to be_empty
+        expect(user.groups).to be_empty
+
+        post :create, params: {
+          user: {
+            email: user.email,
+            role: ''
+          }
+        }
+
+        user.reload
+        expect(user.roles).not_to be_empty
+        expect(user.groups).to eq([Ability.registered_group_name])
+      end
     end
   end
 end
